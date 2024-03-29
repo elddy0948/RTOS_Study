@@ -49,3 +49,18 @@ GPOS의 경우에는 이 Task switching latency가 다양하다.
 `Interrupt latency`와 `Scheduling latency`는 모두 RTOS에서는 **최대한 작아야하고, 시간이 제한적(Time bounded)이어야 한다.**
 반면에 GPOS는 이 시간들이 모두 다양하다.
 
+## GPOS vs RTOS : Priority inversion
+
+<img src="./resources/priority_inversion.jpg" width="500">
+
+그림과 같이 **Shared resource**를 가진 Lower priority task가 실행을 위해 대기중인 상태에서 Higher priority task가 실행을 위해 Shared resource를 요청하고 있는 상태다.
+이는 Lower priority task가 CPU에 의해 실행이 되면서 key를 release해야 Higher priority task가 실행될 수 있는 **Blocking 현상이 발생하게 된다.**
+
+GPOS에서는 이는 큰 이슈가 아니지만, RTOS에서는 꼭 해결해야 하는 이슈이다.
+
+### Solutions
+
+- Re-scheduling
+- Lower priority task를 현재 있는 task들 중 가장 높은 우선순위로 바꿔서 실행되게 하고, key를 release하여 Shared resource를 반납하게 한다.
+- etc...
+
