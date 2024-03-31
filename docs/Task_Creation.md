@@ -1,4 +1,4 @@
-*# Task creation
+# Task creation
 
 ## Multitasking
 
@@ -19,6 +19,11 @@
 `Scheduling policy`는 `Scheduler`가 어떤 기준으로 특정 시점에 어떤 Task를 실행시켜야 하는지를 결정하는 알고리즘이다.
 
 추가적으로 Task는 커널에 의해 `suspended`되는것 외에도 자발적으로 `suspended`되는 것이 가능하다. 예를들어 일정 시간 `delay(sleep)`이 필요하거나, 필요한 자원이 사용 가능해질때 까지 `wait(block)`하거나, `event`발생을 기다리는 경우 등이 해당된다.
+
+- Pre-emptive scheduling
+  - `FreeRTOSConfig.h`에 있는 `#define configTICK_RATE_HZ`의 값을 설정해주면서 preemptive되는 시간을 설정할 수 있다.
+- Co-operative scheduling
+  - `FreeRTOSConfig.h`에 있는 `#define configUSE_PREEMPTION` 값을 0으로 설정해주면 사용할 수 있고, 하나의 task가 종료되면, `taskYIELD()`를 호출하면서 task를 종료시켜줘야 다음 task가 실행된다.
 
 ## Context Switching
 
@@ -96,7 +101,7 @@ static void task1_handler(void* parameters)
 	while(1)
 	{
 		printf("%s\n", (char*)parameters);
-		taskYIELD();
+		taskYIELD();  // for co-operative scheduling
 	}
 }
 
@@ -105,7 +110,7 @@ static void task2_handler(void* parameters)
 	while(1)
 	{
 		printf("%s\n", (char*)parameters);
-		taskYIELD();
+		taskYIELD();  // for co-operative scheduling
 	}
 }
 ```
