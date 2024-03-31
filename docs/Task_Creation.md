@@ -114,3 +114,11 @@ static void task2_handler(void* parameters)
 	}
 }
 ```
+
+#### Image
+
+- Pre-emptive
+<img src="./resources/pre-emption.png" width="500">
+
+- Co-operative
+<img src="./resources/co-operative.png" width="500">
