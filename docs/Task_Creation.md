@@ -122,3 +122,10 @@ static void task2_handler(void* parameters)
 
 - Co-operative
 <img src="./resources/co-operative.png" width="500">
+
+## How it works
+
+<img src="./resources/task_heap.jpg">
+
+<img src="./resources/task_create.jpg">
+
