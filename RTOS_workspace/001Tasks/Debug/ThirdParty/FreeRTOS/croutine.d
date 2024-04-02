@@ -29,6 +29,13 @@ ThirdParty/FreeRTOS/croutine.o: ../ThirdParty/FreeRTOS/croutine.c \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/Global.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW_ConfDefaults.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/SEGGER_SYSVIEW_Conf.h \
+ /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/SEGGER_RTT_Conf.h \
  /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/projdefs.h \
  /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/portable.h \
  /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/deprecated_definitions.h \
@@ -67,6 +74,13 @@ ThirdParty/FreeRTOS/croutine.o: ../ThirdParty/FreeRTOS/croutine.c \
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr_ex.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/OS/SEGGER_SYSVIEW_FreeRTOS.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/Global.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/SEGGER/SEGGER_SYSVIEW_ConfDefaults.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/SEGGER_SYSVIEW_Conf.h:
+/home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/SEGGER/Config/SEGGER_RTT_Conf.h:
 /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/projdefs.h:
 /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/portable.h:
 /home/hojoon/Developer/RTOS_Study/RTOS_workspace/001Tasks/ThirdParty/FreeRTOS/include/deprecated_definitions.h:
