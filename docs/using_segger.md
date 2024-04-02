@@ -90,3 +90,9 @@ int main(void)
 <img src="./resources/system_view_load.jpg">
 
 `Task-2`의 `Run` 이벤트, ISR Enter, ISR Exit, `Task-1` 의 `Run` ... 등을 Timeline을 통해 확인할 수 있다.
+
+그리고 co-operative 모드 에서 Scheduler를 호출하지 않는 모습을 확인할 수 있다.
+
+<img src="./resources/cooperative_timeline.png">
+
+그리고 Task-1과 Task-2가 자발적으로 종료되는 `taskYIELD()`가 호출되는 것도 볼 수 있다.
