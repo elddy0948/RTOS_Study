@@ -1,4 +1,4 @@
-# FreeRTOS Kernel Interrupts
+# FreeRTOS RTOS Tick
 
 Task Scheduling을 위해 사용되는 인터럽트들은 다음과 같다.
 
