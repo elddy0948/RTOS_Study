@@ -10,3 +10,5 @@
 - [FreeRTOS Scheduler](./docs/freertos_scheduler.md)
 - [About RTOS Tick](./docs/rtos_tick.md)
 - [Context Switching](./docs/context_switching.md)
+- [Task states](./docs/task_states.md)
+- [Delay APIs](./docs/delay_apis.md)
