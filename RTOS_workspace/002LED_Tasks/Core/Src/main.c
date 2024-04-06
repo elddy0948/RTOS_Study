@@ -86,7 +86,7 @@ int main(void)
 
 	/* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+	/* USER CODE END Knit */
 
 	/* Configure the system clock */
 	SystemClock_Config();
