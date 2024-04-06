@@ -50,6 +50,7 @@ void vTaskDelayUntil( TickType_t *pxPreviousWakeTime,
 ### Example
 
 ```C
+ // Perform an action every 10 ticks.
 TickType_t xLastWakeTime;
 const TickType_t xFrequency = 10;
 
