@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2024 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -68,11 +68,12 @@ UART_HandleTypeDef huart3;
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-TaskHandle_t GreenLEDTaskHandle;
-TaskHandle_t BlueLEDTaskHandle;
-TaskHandle_t RedLEDTaskHandle;
 
-TaskHandle_t volatile NextTaskHandle = NULL;
+TaskHandle_t RedLEDTaskHandle;
+TaskHandle_t GreenLEDTaskHandle;
+
+volatile BaseType_t status_button = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,9 +84,10 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN PFP */
 
-static void GreenLEDHandler(void* parameters);
-static void BlueLEDHandler(void* parameters);
-static void RedLEDHandler(void* parameters);
+void Switch_priority(void);
+void Button_interrupt_handler(void);
+static void RedLEDTaskHandler(void* parameters);
+static void GreenLEDTaskHandler(void* parameters);
 
 /* USER CODE END PFP */
 
@@ -102,7 +104,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
 	BaseType_t status;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -118,13 +122,14 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-  DWT->LAR = 0xC5ACCE55;
-  DWT->CYCCNT = 0;
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+	CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	DWT->LAR = 0xC5ACCE55;
+	DWT->CYCCNT = 0;
+	DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 
-  SEGGER_SYSVIEW_Conf();
-  SEGGER_SYSVIEW_Start();
+	SEGGER_SYSVIEW_Conf();
+	SEGGER_SYSVIEW_Start();
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -133,28 +138,25 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-  status = xTaskCreate(GreenLEDHandler, "Green_LED_Handler", 200, NULL, 3, &GreenLEDTaskHandle);
-  configASSERT(status == pdPASS);
+	status = xTaskCreate(
+			RedLEDTaskHandler, "RedLEDTask", 200, NULL, 2, &RedLEDTaskHandle);
+	configASSERT(status == pdPASS);
 
-  NextTaskHandle = GreenLEDTaskHandle;
+	status = xTaskCreate(
+			GreenLEDTaskHandler, "GreenLEDTask", 200, NULL, 3, &GreenLEDTaskHandle);
+	configASSERT(status == pdPASS);
 
-  status = xTaskCreate(BlueLEDHandler, "Blue_LED_Handler", 200, NULL, 2, &BlueLEDTaskHandle);
-  configASSERT(status == pdPASS);
-
-  status = xTaskCreate(RedLEDHandler, "Red_LED_Handler", 200, NULL, 1, &RedLEDTaskHandle);
-  configASSERT(status == pdPASS);
-
-  vTaskStartScheduler();
+	vTaskStartScheduler();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1)
+	{
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -394,84 +396,73 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-void button_interrupt_handler(void)
+void Switch_priority(void)
 {
-	BaseType_t pxHigherPriorityTaskWoken = pdFALSE;
+	TaskHandle_t task1, task2, current_task;
+	UBaseType_t priority1, priority2;
+	BaseType_t switch_priority = 0;
 
-	traceISR_ENTER();
+	portENTER_CRITICAL();
 
-	xTaskNotifyFromISR(NextTaskHandle, 0, eNoAction, &pxHigherPriorityTaskWoken);
-
-	portYIELD_FROM_ISR(pxHigherPriorityTaskWoken);
-
-	traceISR_EXIT();
-}
-
-static void GreenLEDHandler(void* parameters)
-{
-	BaseType_t status;
-	while(1)
+	if(status_button)
 	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling Green LED");
-		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-		status = xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(1000));
+		status_button = 0;
+		switch_priority = 1;
+	}
 
-		if(status == pdTRUE)
+	portEXIT_CRITICAL();
+
+	if(switch_priority)
+	{
+//		task1 = xTaskGetHandle("RedLEDTask"); Why is this not working..?
+//		task2 = xTaskGetHandle("GreenLEDTask");
+		task1 = RedLEDTaskHandle;
+		task2 = GreenLEDTaskHandle;
+
+		priority1 = uxTaskPriorityGet(task1);
+		priority2 = uxTaskPriorityGet(task2);
+
+		current_task = xTaskGetCurrentTaskHandle();
+
+		if(current_task == task1)
 		{
-			portENTER_CRITICAL();
-			NextTaskHandle = BlueLEDTaskHandle;
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
-			portEXIT_CRITICAL();
-
-			vTaskSuspend(NULL);
+			vTaskPrioritySet(task1, priority2);
+			vTaskPrioritySet(task2, priority1);
+		}
+		else
+		{
+			vTaskPrioritySet(task2, priority1);
+			vTaskPrioritySet(task1, priority2);
 		}
 	}
 }
 
-static void BlueLEDHandler(void* parameters)
+void Button_interrupt_handler(void)
 {
-	BaseType_t status;
-
-	while(1)
-	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling Blue LED");
-		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-
-		status = xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(800));
-
-		if(status == pdTRUE)
-		{
-			portENTER_CRITICAL();
-			NextTaskHandle = RedLEDTaskHandle;
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
-			portEXIT_CRITICAL();
-
-			vTaskSuspend(NULL);
-		}
-	}
+//	vTaskSuspendAll();
+	status_button = 1;
+//	xTaskResumeAll();
 }
 
-static void RedLEDHandler(void* parameters)
+static void RedLEDTaskHandler(void* parameters)
 {
-	BaseType_t status;
-
 	while(1)
 	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling Blue LED");
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
+		HAL_Delay(100);
+//		vTaskDelay(pdMS_TO_TICKS(100));
+		Switch_priority();
+	}
+}
 
-		status = xTaskNotifyWait(0, 0, NULL, pdMS_TO_TICKS(400));
-
-		if(status == pdTRUE)
-		{
-			portENTER_CRITICAL();
-			NextTaskHandle = NULL;
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-			portEXIT_CRITICAL();
-
-			vTaskSuspend(NULL);
-		}
+static void GreenLEDTaskHandler(void* parameters)
+{
+	while(1)
+	{
+		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+		HAL_Delay(1000);
+//		vTaskDelay(pdMS_TO_TICKS(1000));
+		Switch_priority();
 	}
 }
 /* USER CODE END 4 */
@@ -504,11 +495,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1)
+	{
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -523,7 +514,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
+	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
