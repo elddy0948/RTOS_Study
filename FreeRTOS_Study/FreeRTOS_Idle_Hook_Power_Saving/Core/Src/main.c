@@ -18,22 +18,44 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "string.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "FreeRTOS.h"
 #include "task.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+UART_HandleTypeDef huart3;
+
+/* USER CODE BEGIN PV */
+#define DWT_CTRL		(*(volatile uint32_t*)0xE0001000)
+/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
 static void led_green_handler(void* parameters);
 static void led_blue_handler(void* parameters);
 static void led_red_handler(void* parameters);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -52,20 +74,54 @@ int main(void)
 	TaskHandle_t task1_handle;
 	TaskHandle_t task2_handle;
 	TaskHandle_t task3_handle;
+
 	BaseType_t status;
+	/* USER CODE END 1 */
 
+	/* MCU Configuration--------------------------------------------------------*/
+
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 	HAL_Init();
-	MX_GPIO_Init();
 
+	/* USER CODE BEGIN Init */
+
+	/* USER CODE END Init */
+
+	/* Configure the system clock */
 	SystemClock_Config();
 
-	status = xTaskCreate(led_green_handler, "LED_GREEN_TASK", 200, NULL, 2, &task1_handle);
-	status = xTaskCreate(led_blue_handler, "LED_BLUE_TASK", 200, NULL, 2, &task2_handle);
-	status = xTaskCreate(led_red_handler, "LED_RED_TASK", 200, NULL, 2, &task3_handle);
+	/* USER CODE BEGIN SysInit */
+
+	/* USER CODE END SysInit */
+
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_USART3_UART_Init();
+	/* USER CODE BEGIN 2 */
+
+	DWT_CTRL |= (1 << 0);
+	SEGGER_SYSVIEW_Conf();
+
+	status = xTaskCreate(led_green_handler, "LED_green_task", 200, NULL, 2, &task1_handle);
+	configASSERT(status == pdPASS);
+	status = xTaskCreate(led_blue_handler, "LED_blue_task", 200, NULL, 2, &task2_handle);
+	configASSERT(status == pdPASS);
+	status = xTaskCreate(led_red_handler, "LED_red_task", 200, NULL, 2, &task3_handle);
+	configASSERT(status == pdPASS);
 
 	vTaskStartScheduler();
 
-	while (1) {}
+	/* USER CODE END 2 */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
+		/* USER CODE END WHILE */
+
+		/* USER CODE BEGIN 3 */
+	}
+	/* USER CODE END 3 */
 }
 
 /**
@@ -77,6 +133,18 @@ void SystemClock_Config(void)
 	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+	/** Configure LSE Drive Capability
+	 */
+	HAL_PWR_EnableBkUpAccess();
+
+	/** Configure the main internal regulator output voltage
+	 */
+	__HAL_RCC_PWR_CLK_ENABLE();
+	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
 	RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -91,6 +159,15 @@ void SystemClock_Config(void)
 		Error_Handler();
 	}
 
+	/** Activate the Over-Drive mode
+	 */
+	if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+	{
+		Error_Handler();
+	}
+
+	/** Initializes the CPU, AHB and APB buses clocks
+	 */
 	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
 			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -102,6 +179,41 @@ void SystemClock_Config(void)
 	{
 		Error_Handler();
 	}
+}
+
+/**
+ * @brief USART3 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_USART3_UART_Init(void)
+{
+
+	/* USER CODE BEGIN USART3_Init 0 */
+
+	/* USER CODE END USART3_Init 0 */
+
+	/* USER CODE BEGIN USART3_Init 1 */
+
+	/* USER CODE END USART3_Init 1 */
+	huart3.Instance = USART3;
+	huart3.Init.BaudRate = 115200;
+	huart3.Init.WordLength = UART_WORDLENGTH_8B;
+	huart3.Init.StopBits = UART_STOPBITS_1;
+	huart3.Init.Parity = UART_PARITY_NONE;
+	huart3.Init.Mode = UART_MODE_TX_RX;
+	huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+	huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+	if (HAL_UART_Init(&huart3) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN USART3_Init 2 */
+
+	/* USER CODE END USART3_Init 2 */
+
 }
 
 /**
@@ -118,16 +230,12 @@ static void MX_GPIO_Init(void)
 	/* GPIO Ports Clock Enable */
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOH_CLK_ENABLE();
-	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
-	__HAL_RCC_GPIOG_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
-
-	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : USER_Btn_Pin */
 	GPIO_InitStruct.Pin = USER_Btn_Pin;
@@ -142,19 +250,6 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : USB_PowerSwitchOn_Pin */
-	GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : USB_OverCurrent_Pin */
-	GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
-
 	/* USER CODE BEGIN MX_GPIO_Init_2 */
 	/* USER CODE END MX_GPIO_Init_2 */
 }
@@ -162,44 +257,35 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void led_green_handler(void* parameters)
 {
-	TickType_t last_wakeup_time;
-	last_wakeup_time = xTaskGetTickCount();
 	while(1)
 	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling GREEN LED");
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
-//		vTaskDelay(pdMS_TO_TICKS(1000));
-		vTaskDelayUntil(&last_wakeup_time, pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
 
 static void led_blue_handler(void* parameters)
 {
-	TickType_t last_wakeup_time;
-	last_wakeup_time = xTaskGetTickCount();
-
 	while(1)
 	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling BLUE LED");
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_7);
-//		vTaskDelay(pdMS_TO_TICKS(800));
-		vTaskDelayUntil(&last_wakeup_time, pdMS_TO_TICKS(800));
+		vTaskDelay(pdMS_TO_TICKS(800));
 	}
 }
 
 static void led_red_handler(void* parameters)
 {
-	TickType_t last_wakeup_time;
-	last_wakeup_time = xTaskGetTickCount();
 	while(1)
 	{
-		SEGGER_SYSVIEW_PrintfTarget("Toggling RED LED");
 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_14);
-//		vTaskDelay(pdMS_TO_TICKS(400));
-		vTaskDelayUntil(&last_wakeup_time, pdMS_TO_TICKS(400));
+		vTaskDelay(pdMS_TO_TICKS(400));
 	}
 }
 
+void vApplicationIdleHook(void)
+{
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+}
 /* USER CODE END 4 */
 
 /**
@@ -216,7 +302,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 	/* USER CODE END Callback 0 */
 	if (htim->Instance == TIM5) {
-//		HAL_IncTick();
+		HAL_IncTick();
 	}
 	/* USER CODE BEGIN Callback 1 */
 
